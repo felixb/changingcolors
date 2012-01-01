@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2011-2012 Felix Bechstein -->
+<!--
+		This file is part of Changing Colors. This program is free software; you can
+		redistribute it and/or modify it under the terms of the GNU General
+		Public License as published by the Free Software Foundation; either
+		version 3 of the License, or (at your option) any later version.
+-->
+<!--
+		This program is distributed in the hope that it will be useful, but
+		WITHOUT ANY WARRANTY; without even the implied warranty of
+		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+		General Public License for more details. You should have received a
+		copy of the GNU General Public License along with this program; If
+		not, see <http://www.gnu.org/licenses/>.
+-->
+<resources>
+    <string name="new_game">New Game</string>
+    <string name="new_game_text">Drag your finger over blocks of the same color to connect them.</string>
+    <string name="about">About</string>
+    <string name="start">Start</string>
+    <string name="pause">Pause</string>
+    <string name="cont">Continue</string>
+    <string name="time">Time</string>
+    <string name="difficulty">Difficulty</string>
+    <string name="openfeint">OpenFeint</string>
+    <string name="options">Options</string>
+    <string name="difficulty">Difficulty</string>
+    <string-array name="diffuculty_values">
+        <item>Easy</item>
+        <item>Medium</item>
+        <item>Hard</item>
+        <item>Extreme</item>
+    </string-array>
+</resources>
