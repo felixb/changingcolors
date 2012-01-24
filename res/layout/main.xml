@@ -19,6 +19,14 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
+    <LinearLayout
+        android:id="@+id/ad"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:cacheColorHint="?android:attr/colorBackground"
+        android:gravity="center_horizontal"
+        android:visibility="gone" />
+
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -62,7 +70,8 @@
         android:layout_height="fill_parent"
         android:layout_weight="1" />
 
-    <LinearLayout android:id="@+id/renderlayout"
+    <LinearLayout
+        android:id="@+id/renderlayout"
         android:layout_width="fill_parent"
         android:layout_height="350px"
         android:layout_weight="0"
@@ -73,12 +82,17 @@
             android:layout_height="wrap_content"
             android:layout_weight="1" />
 
-        <org.anddev.andengine.opengl.view.RenderSurfaceView
-            android:id="@+id/rendersurfaceview"
-            android:layout_width="320px"
-            android:layout_height="320px"
-            android:layout_margin="10px"
-            android:layout_weight="0" />
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:background="@drawable/background" >
+
+            <org.anddev.andengine.opengl.view.RenderSurfaceView
+                android:id="@+id/rendersurfaceview"
+                android:layout_width="320px"
+                android:layout_height="320px" />
+        </FrameLayout>
 
         <View
             android:layout_width="fill_parent"

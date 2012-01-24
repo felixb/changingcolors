@@ -52,6 +52,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -80,6 +81,8 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 		OnClickListener {
 	/** Tag for logging. */
 	private static final String TAG = "main";
+	/** Ad's unit id. */
+	private static final String AD_UNITID = "a14f1f2dd79dfa2";
 
 	/** OpenFeint: game name. */
 	private static final String GAME_NAME = "Changing Colors";
@@ -184,7 +187,7 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 		Log.d(TAG, "set layout to size: " + size);
 		vRenderLayout.setLayoutParams(new LinearLayout.LayoutParams(
 				LayoutParams.FILL_PARENT, size + 2 * margin));
-		vRender.setLayoutParams(new LinearLayout.LayoutParams(size, size));
+		vRender.setLayoutParams(new FrameLayout.LayoutParams(size, size));
 
 		SharedPreferences p = PreferenceManager
 				.getDefaultSharedPreferences(this);
@@ -234,6 +237,7 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 		if (this.mOpenFeintSettings != null) {
 			OpenFeint.onResume();
 		}
+		Ads.loadAd(this, R.id.ad, AD_UNITID, null);
 	}
 
 	@Override
