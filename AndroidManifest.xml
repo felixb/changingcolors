@@ -22,6 +22,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- ub0rlib -->
+        <activity
+            android:name="de.ub0r.android.lib.DonationActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:windowSoftInputMode="adjustResize" />
         <!-- OpenFeint -->
         <activity
             android:name="com.openfeint.internal.ui.IntroFlow"

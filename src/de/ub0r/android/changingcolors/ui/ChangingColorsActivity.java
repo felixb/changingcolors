@@ -69,6 +69,7 @@ import com.openfeint.api.ui.Dashboard;
 import de.ub0r.android.changingcolors.R;
 import de.ub0r.android.changingcolors.objects.Block;
 import de.ub0r.android.changingcolors.objects.Mark;
+import de.ub0r.android.lib.DonationHelper;
 import de.ub0r.android.lib.Log;
 import de.ub0r.android.lib.Utils;
 
@@ -237,7 +238,11 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 		if (this.mOpenFeintSettings != null) {
 			OpenFeint.onResume();
 		}
-		Ads.loadAd(this, R.id.ad, AD_UNITID, null);
+		if (!DonationHelper.hideAds(this)) {
+			Ads.loadAd(this, R.id.ad, AD_UNITID, null);
+		} else {
+			this.findViewById(R.id.ad).setVisibility(View.GONE);
+		}
 	}
 
 	@Override
@@ -576,6 +581,9 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 	@Override
 	public boolean onCreateOptionsMenu(final Menu menu) {
 		this.getMenuInflater().inflate(R.menu.main, menu);
+		if (DonationHelper.hideAds(this)) {
+			menu.removeItem(R.id.item_donate);
+		}
 		return true;
 	}
 
@@ -590,6 +598,9 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 			return true;
 		case R.id.about:
 			this.showDialog(DIALOG_ABOUT);
+			return true;
+		case R.id.item_donate:
+			DonationHelper.startDonationActivity(this, false);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
