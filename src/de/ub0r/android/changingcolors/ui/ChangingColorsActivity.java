@@ -99,7 +99,7 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 	private static final String PREFS_DEFFICULTY = "difficulty";
 
 	/** Dialog: options. */
-	private static final int DIALOG_OPTIONS = 0;
+	private static final int DIALOG_DIFFICULTY = 0;
 	/** Dialog: about. */
 	private static final int DIALOG_ABOUT = 1;
 
@@ -198,39 +198,25 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 				.setText(this.getResources().getStringArray(
 						R.array.diffuculty_values)[this.mDifficulty]);
 
-		if (p.getBoolean(PREFS_OPENFEINT, false)) {
-			this.mOpenFeintSettings = new OpenFeintSettings(GAME_NAME,
-					GAME_KEY, GAME_SECRET, GAME_ID);
-			OpenFeint.initialize(this, this.mOpenFeintSettings,
-					new OpenFeintDelegate() {
-					});
-
-			if (this.getString(R.string.app_version).startsWith("0.")) {
-				new Achievement("1455052").unlock(new Achievement.UnlockCB() {
-					@Override
-					public void onSuccess(final boolean newUnlock) {
-						Log.d(TAG, "0. achieved successfully");
-						// ChangingColorsActivity.this
-						// .setResult(Activity.RESULT_OK);
-						// ChangingColorsActivity.this.finish();
-					}
-
-					@Override
-					public void onFailure(final String exceptionMessage) {
-						Log.d(TAG, "0. achieved failed");
-						Toast.makeText(
-								ChangingColorsActivity.this,
-								"Error (" + exceptionMessage
-										+ ") unlocking achievement.",
-								Toast.LENGTH_SHORT).show();
-
-						// ChangingColorsActivity.this
-						// .setResult(Activity.RESULT_CANCELED);
-						// ChangingColorsActivity.this.finish();
-					}
-
+		this.mOpenFeintSettings = new OpenFeintSettings(GAME_NAME, GAME_KEY,
+				GAME_SECRET, GAME_ID);
+		OpenFeint.initialize(this, this.mOpenFeintSettings,
+				new OpenFeintDelegate() {
 				});
-			}
+
+		if (this.getString(R.string.app_version).startsWith("0.")) {
+			new Achievement("1455052").unlock(new Achievement.UnlockCB() {
+				@Override
+				public void onSuccess(final boolean newUnlock) {
+					Log.d(TAG, "0. achieved successfully");
+				}
+
+				@Override
+				public void onFailure(final String exceptionMessage) {
+					Log.d(TAG, "0. achieved failed");
+				}
+
+			});
 		}
 	}
 
@@ -595,8 +581,8 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 	@Override
 	public boolean onOptionsItemSelected(final MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.options:
-			this.showDialog(DIALOG_OPTIONS);
+		case R.id.difficulty:
+			this.showDialog(DIALOG_DIFFICULTY);
 			return true;
 		case R.id.about:
 			this.showDialog(DIALOG_ABOUT);
@@ -609,7 +595,7 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 	@Override
 	protected Dialog onCreateDialog(final int id) {
 		switch (id) {
-		case DIALOG_OPTIONS:
+		case DIALOG_DIFFICULTY:
 			final Dialog od = new Dialog(this);
 			od.setContentView(R.layout.options);
 			((Spinner) od.findViewById(R.id.difficulty))
@@ -666,12 +652,9 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 				OpenFeint.initialize(this, this.mOpenFeintSettings,
 						new OpenFeintDelegate() {
 						});
-				PreferenceManager.getDefaultSharedPreferences(this).edit()
-						.putBoolean(PREFS_OPENFEINT, true).commit();
-			} else {
-				Log.d(TAG, "open dashboard");
-				Dashboard.open();
 			}
+			Log.d(TAG, "open dashboard");
+			Dashboard.open();
 			break;
 		default:
 			break;
