@@ -62,7 +62,7 @@
         android:layout_height="fill_parent"
         android:layout_weight="1" />
 
-    <LinearLayout
+    <LinearLayout android:id="@+id/renderlayout"
         android:layout_width="fill_parent"
         android:layout_height="350px"
         android:layout_weight="0"

@@ -45,14 +45,26 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.openfeint.api.OpenFeint;
+import com.openfeint.api.OpenFeintDelegate;
+import com.openfeint.api.OpenFeintSettings;
+import com.openfeint.api.resource.Achievement;
+import com.openfeint.api.resource.Leaderboard;
+import com.openfeint.api.resource.Score;
+import com.openfeint.api.ui.Dashboard;
+
 import de.ub0r.android.changingcolors.R;
 import de.ub0r.android.changingcolors.objects.Block;
 import de.ub0r.android.changingcolors.objects.Mark;
@@ -69,6 +81,20 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 	/** Tag for logging. */
 	private static final String TAG = "main";
 
+	/** OpenFeint: game name. */
+	private static final String GAME_NAME = "Changing Colors";
+	/** OpenFeint: game id. */
+	private static final String GAME_ID = "423882";
+	/** OpenFeint: game key. */
+	private static final String GAME_KEY = "vvqtr05XtZ6Ak2YfFXmw";
+	/** OpenFeint: game secret. */
+	private static final String GAME_SECRET = "K6rY9qRbQEWRLla6xZ6amkocvUBdQPx0kHWlzALKE";
+
+	/** OpenFeint: settings. */
+	private OpenFeintSettings mOpenFeintSettings;
+
+	/** Preference's name: do openfeint. */
+	private static final String PREFS_OPENFEINT = "openfeint";
 	/** Preference's name: difficulty. */
 	private static final String PREFS_DEFFICULTY = "difficulty";
 
@@ -78,12 +104,15 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 	private static final int DIALOG_ABOUT = 1;
 
 	/** Width of the camera. */
-	public static final int CAMERA_WIDTH = 320;
+	public static final int CAMERA_WIDTH = 640;
 	/** Height of the camera. */
-	public static final int CAMERA_HEIGHT = 320;
+	public static final int CAMERA_HEIGHT = 640;
 
 	/** Time between ticks. */
 	public static final float[] DELAYS_TICK = new float[] { 3f, 2f, 1f, 0.5f };
+	/** OpenFeint: leaderboards. */
+	public static final String[] OPENFEINT_LEADERBOARDS = new String[] {
+			"1038807", "1039517", "1039527", "1039537" };
 
 	/** State: waiting for game to start. */
 	public static final int STATE_NEW_GAME = 0;
@@ -140,6 +169,23 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 
 		super.onCreate(savedInstanceState);
 
+		View vRender = this.findViewById(R.id.rendersurfaceview);
+		View vRenderLayout = this.findViewById(R.id.renderlayout);
+
+		DisplayMetrics dm = new DisplayMetrics();
+		this.getWindowManager().getDefaultDisplay().getMetrics(dm);
+		final int margin = 15;
+		int size = -2 * margin;
+		if (dm.widthPixels < dm.heightPixels) {
+			size += dm.widthPixels;
+		} else {
+			size += dm.heightPixels;
+		}
+		Log.d(TAG, "set layout to size: " + size);
+		vRenderLayout.setLayoutParams(new LinearLayout.LayoutParams(
+				LayoutParams.FILL_PARENT, size + 2 * margin));
+		vRender.setLayoutParams(new LinearLayout.LayoutParams(size, size));
+
 		SharedPreferences p = PreferenceManager
 				.getDefaultSharedPreferences(this);
 		this.mDifficulty = p.getInt(PREFS_DEFFICULTY, 1);
@@ -151,6 +197,65 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 		((TextView) this.findViewById(R.id.difficulty))
 				.setText(this.getResources().getStringArray(
 						R.array.diffuculty_values)[this.mDifficulty]);
+
+		if (p.getBoolean(PREFS_OPENFEINT, false)) {
+			this.mOpenFeintSettings = new OpenFeintSettings(GAME_NAME,
+					GAME_KEY, GAME_SECRET, GAME_ID);
+			OpenFeint.initialize(this, this.mOpenFeintSettings,
+					new OpenFeintDelegate() {
+					});
+
+			if (this.getString(R.string.app_version).startsWith("0.")) {
+				new Achievement("1455052").unlock(new Achievement.UnlockCB() {
+					@Override
+					public void onSuccess(final boolean newUnlock) {
+						Log.d(TAG, "0. achieved successfully");
+						// ChangingColorsActivity.this
+						// .setResult(Activity.RESULT_OK);
+						// ChangingColorsActivity.this.finish();
+					}
+
+					@Override
+					public void onFailure(final String exceptionMessage) {
+						Log.d(TAG, "0. achieved failed");
+						Toast.makeText(
+								ChangingColorsActivity.this,
+								"Error (" + exceptionMessage
+										+ ") unlocking achievement.",
+								Toast.LENGTH_SHORT).show();
+
+						// ChangingColorsActivity.this
+						// .setResult(Activity.RESULT_CANCELED);
+						// ChangingColorsActivity.this.finish();
+					}
+
+				});
+			}
+		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		if (this.mOpenFeintSettings != null) {
+			OpenFeint.onExit();
+		}
+	};
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if (this.mOpenFeintSettings != null) {
+			OpenFeint.onResume();
+		}
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		if (this.mOpenFeintSettings != null) {
+			OpenFeint.onPause();
+		}
 	}
 
 	@Override
@@ -175,9 +280,10 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 	@Override
 	public void onLoadResources() {
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
-		this.mBitmapTextureAtlas = new BitmapTextureAtlas(256, 32,
-				TextureOptions.DEFAULT);
 		int l = 8;
+		this.mBitmapTextureAtlas = new BitmapTextureAtlas(
+				(int) Block.COLOR_WIDTH * l, (int) Block.COLOR_HEIGHT,
+				TextureOptions.DEFAULT);
 		this.mTextureRegionColors = new TextureRegion[l];
 		for (int i = 0; i < l; i++) {
 			Log.d(TAG, "BTATRF.cFA(colors.png," + i + ")");
@@ -418,6 +524,33 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 		case STATE_GAME_FINISHED:
 			this.findViewById(R.id.pause).setEnabled(false);
 			Toast.makeText(this, "you won!!!!1", Toast.LENGTH_LONG).show();
+			if (this.mOpenFeintSettings != null) {
+				Score s = new Score(this.mTime, null);
+				Leaderboard l = new Leaderboard(
+						OPENFEINT_LEADERBOARDS[this.mDifficulty]);
+				s.submitTo(l, new Score.SubmitToCB() {
+					@Override
+					public void onSuccess(final boolean newHighScore) {
+						Log.d(TAG, "score posted");
+						// sweet, score was posted
+						// MyClass.this.setResult(Activity.RESULT_OK);
+						// MyClass.this.finish();
+					}
+
+					@Override
+					public void onFailure(final String exceptionMessage) {
+						Log.d(TAG, "score post failed");
+						Toast.makeText(
+								ChangingColorsActivity.this,
+								"Error (" + exceptionMessage
+										+ ") posting score.",
+								Toast.LENGTH_SHORT).show();
+						// MyClass.this.setResult(Activity.RESULT_CANCELED);
+						// MyClass.this.finish();
+					}
+				});
+
+			}
 			this.mGameState = pNewState;
 			break;
 		case STATE_IN_GAME:
@@ -526,7 +659,19 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 			}
 			break;
 		case R.id.openfeint:
-			// TODO
+			if (this.mOpenFeintSettings == null) {
+				Log.d(TAG, "init openfeint");
+				this.mOpenFeintSettings = new OpenFeintSettings(GAME_NAME,
+						GAME_KEY, GAME_SECRET, GAME_ID);
+				OpenFeint.initialize(this, this.mOpenFeintSettings,
+						new OpenFeintDelegate() {
+						});
+				PreferenceManager.getDefaultSharedPreferences(this).edit()
+						.putBoolean(PREFS_OPENFEINT, true).commit();
+			} else {
+				Log.d(TAG, "open dashboard");
+				Dashboard.open();
+			}
 			break;
 		default:
 			break;

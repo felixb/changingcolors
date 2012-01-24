@@ -48,9 +48,9 @@ public class Block extends ArrayList<Color> {
 	public static final int BLOCK_COUNT_HEIGHT = 10;
 
 	/** Width of a tile. */
-	public static final float COLOR_WIDTH = 32f;
+	public static final float COLOR_WIDTH = 64f;
 	/** Height of a tile. */
-	public static final float COLOR_HEIGHT = 32f;
+	public static final float COLOR_HEIGHT = COLOR_WIDTH;
 
 	/** Index in color array: red. */
 	public static final int INDEX_RED = 0;

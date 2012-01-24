@@ -1,4 +1,5 @@
-You will need ub0rlib [1] and AndEngine [2] to compile this code.
+You will need ub0rlib [1], AndEngine [2] and the OpenFeint SDK [3] to compile this code.
 
 [1] http://github.com/felixb/ub0rlib/
 [2] http://www.andengine.org/
+[3] https://api.openfeint.com/dd/downloads
