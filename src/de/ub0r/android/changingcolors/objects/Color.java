@@ -31,7 +31,7 @@ import de.ub0r.android.changingcolors.ui.ChangingColorsActivity;
  * 
  * @author Felix Bechstein <f@ub0r.de>
  */
-public class Color extends ArrayList<Sprite> {
+public final class Color extends ArrayList<Sprite> {
 	/** Tag for logging. */
 	// private static final String TAG = Color.class.getSimpleName();
 	/** Serial version UID. */
@@ -61,6 +61,19 @@ public class Color extends ArrayList<Sprite> {
 	private final float mfX, mfY;
 	/** {@link Color}'s color. */
 	private int mColor;
+
+	/**
+	 * Default constructor.
+	 * 
+	 * @param pTextureRegion
+	 *            {@link TextureRegion}
+	 * @param pColor
+	 *            color
+	 * @param pX
+	 *            x
+	 * @param pY
+	 *            y
+	 */
 
 	public Color(final TextureRegion[] pTextureRegion, final int pColor,
 			final int pX, final int pY) {

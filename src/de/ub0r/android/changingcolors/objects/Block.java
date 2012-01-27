@@ -33,7 +33,7 @@ import android.util.Log;
  * 
  * @author Felix Bechstein <f@ub0r.de>
  */
-public class Block extends ArrayList<Color> {
+public final class Block extends ArrayList<Color> {
 	/** Tag for logging. */
 	private static final String TAG = Block.class.getSimpleName();
 	/** Serial version UID. */
@@ -123,6 +123,15 @@ public class Block extends ArrayList<Color> {
 		return (int) (pY / COLOR_WIDTH);
 	}
 
+	/**
+	 * Are given coordinates valid?
+	 * 
+	 * @param pX
+	 *            x
+	 * @param pY
+	 *            y
+	 * @return true, if coordinates are valid
+	 */
 	public static boolean valid(final float pX, final float pY) {
 		Log.d(TAG, "valid(" + pX + "," + pY + ")");
 		int x = translateXfromScene(pX);
@@ -135,7 +144,7 @@ public class Block extends ArrayList<Color> {
 	/**
 	 * Create a {@link Block} with one color.
 	 * 
-	 * @param pTexture
+	 * @param pTextureRegion
 	 *            {@link TextureRegion} holding {@link Sprite}s
 	 * @param pColor
 	 *            {@link Block}'s color

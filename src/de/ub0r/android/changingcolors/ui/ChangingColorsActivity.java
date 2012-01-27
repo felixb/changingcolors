@@ -38,6 +38,7 @@ import org.anddev.andengine.ui.activity.LayoutGameActivity;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -78,8 +79,68 @@ import de.ub0r.android.lib.Utils;
  * 
  * @author Felix Bechstein <f@ub0r.de>
  */
-public class ChangingColorsActivity extends LayoutGameActivity implements
+public final class ChangingColorsActivity extends LayoutGameActivity implements
 		OnClickListener {
+	/**
+	 * Achievment's unlock callback.
+	 * 
+	 * @author flx
+	 */
+	private static class UnlockCB extends Achievement.UnlockCB {
+		/** {@link Context}. */
+		private final Context mContext;
+		/** Name. */
+		private final String mName;
+		/** Text. */
+		private final String mText;
+
+		/**
+		 * Default constructor.
+		 * 
+		 * @param pContext
+		 *            {@link Context}
+		 * @param pName
+		 *            name of avhievement
+		 * @param pText
+		 *            text showed when unlocked; null for default text
+		 */
+		public UnlockCB(final Context pContext, final String pName,
+				final String pText) {
+			super();
+			this.mContext = pContext;
+			this.mName = pName;
+			if (pText == null) {
+				this.mText = pContext.getString(R.string.achievement_unlocked,
+						pName);
+			} else {
+				this.mText = pText;
+			}
+		}
+
+		// public UnlockCB(final Context pContext, final String pName,
+		// final int pText) {
+		// this(pContext, pName, pContext.getString(pText));
+		// }
+
+		@Override
+		public void onSuccess(final boolean newUnlock) {
+			if (newUnlock) {
+				Log.i(TAG, "achievment unlocked: " + this.mName);
+				Toast.makeText(this.mContext, this.mText, Toast.LENGTH_LONG)
+						.show();
+			} else {
+				Log.i(TAG, "achievment allready unlocked " + this.mName);
+			}
+		}
+
+		@Override
+		public void onFailure(final String exceptionMessage) {
+			Log.e(TAG, "achievment unlock failed: " + this.mName
+					+ " error message: " + exceptionMessage);
+		}
+
+	}
+
 	/** Tag for logging. */
 	private static final String TAG = "main";
 	/** Ad's unit id. */
@@ -97,8 +158,6 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 	/** OpenFeint: settings. */
 	private OpenFeintSettings mOpenFeintSettings;
 
-	/** Preference's name: do openfeint. */
-	private static final String PREFS_OPENFEINT = "openfeint";
 	/** Preference's name: difficulty. */
 	private static final String PREFS_DEFFICULTY = "difficulty";
 
@@ -179,7 +238,7 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 		DisplayMetrics dm = new DisplayMetrics();
 		this.getWindowManager().getDefaultDisplay().getMetrics(dm);
 		final int margin = 15;
-		int size = -2 * margin;
+		int size = -1 * 2 * margin;
 		if (dm.widthPixels < dm.heightPixels) {
 			size += dm.widthPixels;
 		} else {
@@ -209,18 +268,7 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 				});
 
 		if (this.getString(R.string.app_version).startsWith("0.")) {
-			new Achievement("1455052").unlock(new Achievement.UnlockCB() {
-				@Override
-				public void onSuccess(final boolean newUnlock) {
-					Log.d(TAG, "0. achieved successfully");
-				}
-
-				@Override
-				public void onFailure(final String exceptionMessage) {
-					Log.d(TAG, "0. achieved failed");
-				}
-
-			});
+			new Achievement("1455052").unlock(new UnlockCB(this, "0.", null));
 		}
 	}
 
@@ -551,7 +599,6 @@ public class ChangingColorsActivity extends LayoutGameActivity implements
 		case STATE_IN_GAME:
 			this.findViewById(R.id.pause).setEnabled(true);
 			((Button) this.findViewById(R.id.pause)).setText(R.string.pause);
-			// TODO
 			this.mGameState = pNewState;
 			break;
 		case STATE_NEW_GAME:

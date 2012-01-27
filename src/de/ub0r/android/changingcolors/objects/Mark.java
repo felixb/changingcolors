@@ -23,7 +23,7 @@ package de.ub0r.android.changingcolors.objects;
  * 
  * @author Felix Bechstein <f@ub0r.de>
  */
-public class Mark {
+public final class Mark {
 	/** Coordinates. */
 	private final int mX, mY;
 
@@ -55,14 +55,14 @@ public class Mark {
 	/**
 	 * @return X
 	 */
-	public final int getX() {
+	public int getX() {
 		return this.mX;
 	}
 
 	/**
 	 * @return Y
 	 */
-	public final int getY() {
+	public int getY() {
 		return this.mY;
 	}
 

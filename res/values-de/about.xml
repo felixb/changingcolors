@@ -15,21 +15,5 @@
 		not, see <http://www.gnu.org/licenses/>.
 -->
 <resources>
-    <string name="new_game">New Game</string>
-    <string name="new_game_text">Drag your finger over blocks of the same color to connect them.</string>
-    <string name="about">About</string>
-    <string name="start">Start</string>
-    <string name="pause">Pause</string>
-    <string name="cont">Continue</string>
-    <string name="time">Time</string>
-    <string name="difficulty">Difficulty</string>
-    <string name="openfeint">OpenFeint</string>
-    <string name="options">Options</string>
-    <string name="achievement_unlocked">New achievement unlocked: %s</string>
-    <string-array name="diffuculty_values">
-        <item>Easy</item>
-        <item>Medium</item>
-        <item>Hard</item>
-        <item>Extreme</item>
-    </string-array>
+    <string name="about0">Das ist ein kleines Spiel mit wechselnden Farben. Zieh deinen Finger über Blöcke gleicher Farbe um sie zu verbinden. Gewinne das Spiel indem du alle Blöcke in einer Farbe vereinst.</string>
 </resources>
