@@ -27,6 +27,7 @@ import org.anddev.andengine.entity.sprite.Sprite;
 import org.anddev.andengine.opengl.texture.region.TextureRegion;
 
 import android.util.Log;
+import de.ub0r.android.changingcolors.ui.ChangingColorsActivity;
 
 /**
  * A {@link Block} is a group of colors.
@@ -134,11 +135,22 @@ public final class Block extends ArrayList<Color> {
 	 */
 	public static boolean valid(final float pX, final float pY) {
 		Log.d(TAG, "valid(" + pX + "," + pY + ")");
-		int x = translateXfromScene(pX);
-		int y = translateYfromScene(pY);
-		Log.d(TAG, "x=" + x + ", y=" + y);
-		return x >= 0 && y >= 0 && x < BLOCK_COUNT_WIDTH
-				&& y < BLOCK_COUNT_HEIGHT;
+		return valid(translateXfromScene(pX), translateYfromScene(pY));
+	}
+
+	/**
+	 * Are given coordinates valid?
+	 * 
+	 * @param pX
+	 *            x
+	 * @param pY
+	 *            y
+	 * @return true, if coordinates are valid
+	 */
+	public static boolean valid(final int pX, final int pY) {
+		Log.d(TAG, "valid(" + pX + "," + pY + ")");
+		return pX >= 0 && pY >= 0 && pX < BLOCK_COUNT_WIDTH
+				&& pY < BLOCK_COUNT_HEIGHT;
 	}
 
 	/**
@@ -212,10 +224,16 @@ public final class Block extends ArrayList<Color> {
 	 * 
 	 * @param pTarget
 	 *            target {@link Block}
+	 * @param pActivity
+	 *            {@link ChangingColorsActivity}
 	 */
-	public void merge(final Block pTarget) {
+	public void merge(final Block pTarget,
+			final ChangingColorsActivity pActivity) {
 		Log.d(TAG, "merge block " + this + " with " + pTarget);
 		this.addAll(pTarget);
+		for (Color c : pTarget) {
+			pActivity.setBlock(c.getX(), c.getY(), this);
+		}
 		this.setNeighbors();
 		pTarget.clear();
 		pTarget.detach();
@@ -292,18 +310,20 @@ public final class Block extends ArrayList<Color> {
 	 * Detach from scene.
 	 */
 	public void detach() {
-		this.mEngine.runOnUpdateThread(new Runnable() {
-			@Override
-			public void run() {
-				int l = Block.this.size();
-				for (int i = 0; i < l; i++) {
-					Block.this.detachColor(i);
-				}
+		if (this.mEngine != null) {
+			this.mEngine.runOnUpdateThread(new Runnable() {
+				@Override
+				public void run() {
+					int l = Block.this.size();
+					for (int i = 0; i < l; i++) {
+						Block.this.detachColor(i);
+					}
 
-				Block.this.mEngine = null;
-				Block.this.mScene = null;
-			}
-		});
+					Block.this.mEngine = null;
+					Block.this.mScene = null;
+				}
+			});
+		}
 	}
 
 	/**

@@ -45,6 +45,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.view.Menu;
@@ -69,7 +70,6 @@ import com.openfeint.api.ui.Dashboard;
 
 import de.ub0r.android.changingcolors.R;
 import de.ub0r.android.changingcolors.objects.Block;
-import de.ub0r.android.changingcolors.objects.Mark;
 import de.ub0r.android.lib.DonationHelper;
 import de.ub0r.android.lib.Log;
 import de.ub0r.android.lib.Utils;
@@ -198,17 +198,17 @@ public final class ChangingColorsActivity extends LayoutGameActivity implements
 	/** {@link TextView} showing time. */
 	private TextView mTvTime;
 
-	/** {@link ArrayList} of marked colors. */
-	private ArrayList<Mark> mMarked = new ArrayList<Mark>();
 	/** Texture atlas. */
 	private BitmapTextureAtlas mBitmapTextureAtlas;
-	/** Texture region for {@link Color}s. */
+	/** Texture region for {@link Block}s. */
 	private TextureRegion[] mTextureRegionColors;
 
 	/** The {@link Camera}. */
 	private Camera mCamera;
 	/** {@link Block}s. */
-	private ArrayList<Block> mBlocks;
+	private Block[][] mBlocks;
+	/** Number of existing blocks. */
+	private int mBlockCount;
 
 	/** Handle UI updates. */
 	private Handler mHandler = new Handler() {
@@ -344,26 +344,28 @@ public final class ChangingColorsActivity extends LayoutGameActivity implements
 	 *            {@link Scene} the blocks need to be attached to.
 	 */
 	private void initBlocks(final Scene pScene) {
+		this.mBlockCount = Block.BLOCK_COUNT_WIDTH * Block.BLOCK_COUNT_HEIGHT;
 		if (this.mBlocks != null) {
-			int l = this.mBlocks.size();
-			for (int i = 0; i < l; i++) {
-				this.mBlocks.get(i).detach();
+			for (int x = 0; x < Block.BLOCK_COUNT_WIDTH; x++) {
+				for (int y = 0; y < Block.BLOCK_COUNT_HEIGHT; y++) {
+					this.mBlocks[x][y].detach();
+					this.mBlocks[x][y] = null;
+				}
 			}
-			this.mBlocks.clear();
-			this.mBlocks = null;
+		} else {
+			this.mBlocks = new Block[Block.BLOCK_COUNT_WIDTH][Block.BLOCK_COUNT_HEIGHT];
 		}
-		this.mBlocks = new ArrayList<Block>(Block.BLOCK_COUNT_WIDTH
-				* Block.BLOCK_COUNT_HEIGHT);
 		for (int x = 0; x < Block.BLOCK_COUNT_WIDTH; x++) {
 			for (int y = 0; y < Block.BLOCK_COUNT_HEIGHT; y++) {
-				this.mBlocks.add(new Block(this.mTextureRegionColors,
-						Block.COLOR_RANDOM, x, y));
+				this.mBlocks[x][y] = new Block(this.mTextureRegionColors,
+						Block.COLOR_RANDOM, x, y);
 			}
 		}
 
-		int l = this.mBlocks.size();
-		for (int i = 0; i < l; i++) {
-			this.mBlocks.get(i).attach(this.mEngine, pScene);
+		for (int x = 0; x < Block.BLOCK_COUNT_WIDTH; x++) {
+			for (int y = 0; y < Block.BLOCK_COUNT_HEIGHT; y++) {
+				this.mBlocks[x][y].attach(this.mEngine, pScene);
+			}
 		}
 		this.changeColor();
 		this.mTime = 0;
@@ -377,92 +379,77 @@ public final class ChangingColorsActivity extends LayoutGameActivity implements
 		this.initBlocks(scene);
 
 		scene.setOnSceneTouchListener(new IOnSceneTouchListener() {
+			/** Marked {@link Block}s. */
+			private ArrayList<Block> mMarkedBlocks = new ArrayList<Block>();
+
 			@Override
 			public boolean onSceneTouchEvent(final Scene pScene,
 					final TouchEvent pSceneTouchEvent) {
 				if (ChangingColorsActivity.this.mGameState != STATE_IN_GAME) {
 					return false;
 				}
+				long c = SystemClock.elapsedRealtime();
 
 				final int action = pSceneTouchEvent.getAction();
 				final float x = pSceneTouchEvent.getX();
 				final float y = pSceneTouchEvent.getY();
+				final int cX = Block.translateXfromScene(x);
+				final int cY = Block.translateYfromScene(y);
 				Log.d(TAG, "touch: action=" + action);
 				Log.d(TAG, "touch: x=" + x + " y=" + y);
+				Log.d(TAG, "touch: x=" + cX + " y=" + cY, c);
 
-				if (Block.valid(x, y)) {
+				if (Block.valid(cX, cY)) {
 					// TouchEvent on game field
-					Log.d(TAG, "valid");
-					ArrayList<Mark> marks = ChangingColorsActivity.this.mMarked;
+					Log.d(TAG, "valid", c);
+					ArrayList<Block> markedBlocks = this.mMarkedBlocks;
 
 					if (action == TouchEvent.ACTION_DOWN) {
-						marks.clear();
+						markedBlocks.clear();
 					}
 
-					int l = marks.size();
-					boolean marked = false;
-					for (int i = l - 1; i >= 0; i--) {
-						if (marks.get(i).equals(x, y)) {
-							marked = true;
-							break;
-						}
+					Block block = ChangingColorsActivity.this.getBlock(cX, cY);
+					if (block != null && !markedBlocks.contains(block)) {
+						markedBlocks.add(block);
 					}
-					if (!marked) {
-						marks.add(new Mark(x, y));
-					}
+
 					if (action == TouchEvent.ACTION_UP) {
-						l = marks.size();
-						for (int i = 0; i < l; i++) {
-							Log.d(TAG, i + ": " + marks.get(i));
-						}
-
+						int l = markedBlocks.size();
 						int color = -1;
-						ArrayList<Block> markedBlocks = new ArrayList<Block>(
-								marks.size());
-						for (int i = 0; i < l; i++) {
-							Mark m = marks.get(i);
-							Log.d(TAG, i + ": " + m);
-							Block b = ChangingColorsActivity.this.getBlock(
-									m.getX(), m.getY());
-							if (b == null) {
-								continue;
-							} else {
-								int bcolor = b.getColor();
-								Log.d(TAG, "block: " + b);
-								if (color < 0) {
-									color = bcolor;
-									markedBlocks.add(b);
-								} else if (markedBlocks.contains(b)) {
-									Log.d(TAG, "block already marked: " + b);
-									continue;
-								} else if (color != bcolor) {
-									marks.clear();
-									Log.d(TAG, "brk: " + color + "!=" + bcolor);
-									break;
-								} else {
-									markedBlocks.add(b);
-								}
-							}
-						}
-						if (marks.isEmpty()) {
-							Log.d(TAG, "marks is empty");
+						if (l <= 1) {
+							Log.d(TAG, "marked blocks: " + l, c);
 						} else {
-							int ll = markedBlocks.size();
-							Log.d(TAG, "merge blocks: " + ll);
-							if (ll > 0) {
-								Block b = markedBlocks.get(0);
-								Log.d(TAG, "base block: " + b);
-								for (int i = 1; i < ll; i++) {
-									Block bb = markedBlocks.get(i);
-									b.merge(bb);
-									ChangingColorsActivity.this.removeBlock(bb);
+							for (int i = 0; i < l; i++) {
+								Block b = markedBlocks.get(i);
+								Log.d(TAG, i + ": " + b, c);
+								if (b == null) {
+									continue;
+								} else {
+									int bcolor = b.getColor();
+									if (color < 0) {
+										color = bcolor;
+									} else if (color != bcolor) {
+										Log.d(TAG, "brk:" + color + "!="
+												+ bcolor);
+										color = -1;
+										break;
+									}
 								}
 							}
-							marks.clear();
 						}
+						if (color > -1) {
+							Block b = markedBlocks.get(0);
+							Log.d(TAG, "base block: " + b);
+							for (int i = 1; i < l; i++) {
+								Block bb = markedBlocks.get(i);
+								b.merge(bb, ChangingColorsActivity.this);
+								ChangingColorsActivity.this.removeBlock(bb);
+							}
+						}
+						markedBlocks.clear();
 					}
 				}
-
+				Log.d(TAG, "onSceneTouchEvent() finished", c);
 				return true;
 			}
 		});
@@ -515,10 +502,10 @@ public final class ChangingColorsActivity extends LayoutGameActivity implements
 	 * Change color of each block.
 	 */
 	private void changeColor() {
-		ArrayList<Block> blocks = this.mBlocks;
-		int l = blocks.size();
-		for (int i = 0; i < l; i++) {
-			blocks.get(i).setColor(Block.COLOR_RANDOM);
+		for (int x = 0; x < Block.BLOCK_COUNT_WIDTH; x++) {
+			for (int y = 0; y < Block.BLOCK_COUNT_HEIGHT; y++) {
+				this.mBlocks[x][y].setColor(Block.COLOR_RANDOM);
+			}
 		}
 	}
 
@@ -532,14 +519,21 @@ public final class ChangingColorsActivity extends LayoutGameActivity implements
 	 * @return {@link Block} or null
 	 */
 	public Block getBlock(final int pX, final int pY) {
-		int l = this.mBlocks.size();
-		for (int i = 0; i < l; i++) {
-			Block b = this.mBlocks.get(i);
-			if (b.equals(pX, pY)) {
-				return b;
-			}
-		}
-		return null;
+		return this.mBlocks[pX][pY];
+	}
+
+	/**
+	 * Set a new {@link Block}.
+	 * 
+	 * @param pX
+	 *            column
+	 * @param pY
+	 *            row
+	 * @param pBlock
+	 *            {@link Block}
+	 */
+	public void setBlock(final int pX, final int pY, final Block pBlock) {
+		this.mBlocks[pX][pY] = pBlock;
 	}
 
 	/**
@@ -549,8 +543,8 @@ public final class ChangingColorsActivity extends LayoutGameActivity implements
 	 *            {@link Block}
 	 */
 	public void removeBlock(final Block pBlock) {
-		this.mBlocks.remove(pBlock);
-		if (this.mBlocks.size() == 1) {
+		--this.mBlockCount;
+		if (this.mBlockCount == 1) {
 			// game won!
 			this.changeState(STATE_GAME_FINISHED);
 		}
